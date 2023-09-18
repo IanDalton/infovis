@@ -50,7 +50,7 @@ def extract_info(html):
             info_dict["Canal"] = datos[1][0].replace("\n","")
             info_dict["ID_Canal"] = datos[1][1].replace("\n","")
             
-            info_dict['Fecha'] = extract_hora(div_next[1])
+            info_dict['Fecha'] = extract_hora(div_next[1]).timestamp()
         except:
             continue
 
