@@ -22,40 +22,41 @@ def extract_info(html):
         fecha = datetime(int(ano),int(mes),int(dia),int(hora),int(minuto),int(segundo))
         return fecha
 
-    soup = BeautifulSoup(html, 'html.parser')
+    soup = BeautifulSoup(html, 'lxml')
 
     divs = soup.find_all('div', {'class': 'outer-cell mdl-cell mdl-cell--12-col mdl-shadow--2dp'})
-
+    print("done")
     info_list = []
-
+    print(len(divs))
     
-    for div in divs:
-        info_dict = {}
-        title = div.find('p', {'class': 'mdl-typography--title'}).text.strip()
-        info_dict['Lugar'] = title
-        div= div.find("div")
-        div_next= div.find_all("div")
-        #print(div_next[1])
-        links = div_next[1].find_all('a')
-        datos = []
-        for link in links:
-            url = link.get('href')
-            id = url.split('/')[-1]
-            id = id.replace('watch?v=','')
-            datos.append([link.text.strip(),id])
+    for i,div in enumerate(divs):
+        try:
+            print(i)
+            info_dict = {}
+            
+            div= div.find("div")
+            div_next= div.find_all("div")
+            #print(div_next[1])
+            links = div_next[1].find_all('a')
+            datos = []
+            for link in links:
+                url = link.get('href')
+                id = url.split('/')[-1]
+                id = id.replace('watch?v=','')
+                datos.append([link.text.strip(),id])
 
-        info_dict["Video"] = datos[0][0]
-        info_dict["ID_Video"] = datos[0][1]
-        info_dict["Canal"] = datos[1][0]
-        info_dict["ID_Canal"] = datos[1][1]
+            info_dict["Video"] = datos[0][0].replace("\n","")
+            info_dict["ID_Video"] = datos[0][1].replace("\n","")
+            info_dict["Canal"] = datos[1][0].replace("\n","")
+            info_dict["ID_Canal"] = datos[1][1].replace("\n","")
+            
+            info_dict['Fecha'] = extract_hora(div_next[1])
+        except:
+            continue
+
+
+
         
-        info_dict['Fecha'] = extract_hora(div_next[1])
-
-
-
-        content_cells = div.find_all('div', {'class': 'content-cell mdl-cell mdl-cell--6-col mdl-typography--body-1'})
-        for i, content_cell in enumerate(content_cells):
-            info_dict[f'Content Cell {i+1}'] = content_cell.text.strip()
 
         
 
