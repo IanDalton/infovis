@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Visualizacion de base de datos</title>
+    <script src="https://cdn.jsdelivr.net/npm/vega@5.25.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5.12.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6.22.1"></script>
+</head>
+
+<body>
+    <h1>Videos vistos desde 2021</h1>
+    <div id="vis"></div>
+
+    <script>
+        var yourVlSpec = {
+            "width": 800,
+            "height": 400,
+            "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+            "data": {
+                "url": "https://iandalton.github.io/infovis/datos_personales/watch-history.csv"
+            },
+            "transform": [{
+                "calculate": "datetime(datum.Fecha * 1000)",
+                "as": "Fecha"
+            }],
+            "mark": "point",
+            "encoding": {
+                "x": { "field": "Fecha", "type": "temporal", "sort": "x" },
+                "y": { "aggregate": "count", "type": "quantitative", "title": "Cantidad" }
+            }
+        };
+
+
+        vegaEmbed('#vis', yourVlSpec, { "actions": false });
+    </script>
+</body>
+
+</html>

@@ -31,7 +31,7 @@ def extract_info(html):
     
     for i,div in enumerate(divs):
         try:
-            print(i)
+            #print(i)
             info_dict = {}
             
             div= div.find("div")
@@ -44,13 +44,14 @@ def extract_info(html):
                 id = url.split('/')[-1]
                 id = id.replace('watch?v=','')
                 datos.append([link.text.strip(),id])
-
-            info_dict["Video"] = datos[0][0].replace("\n","")
-            info_dict["ID_Video"] = datos[0][1].replace("\n","")
-            info_dict["Canal"] = datos[1][0].replace("\n","")
-            info_dict["ID_Canal"] = datos[1][1].replace("\n","")
+            a = "das"
             
-            info_dict['Fecha'] = extract_hora(div_next[1]).timestamp()
+            info_dict["Video"] = datos[0][0].replace("\n","").replace("\u202f"," ").replace("            ", " ")
+            info_dict["ID_Video"] = datos[0][1].replace("\n","").replace("\u202f"," ").replace("            ", " ")
+            info_dict["Canal"] = datos[1][0].replace("\n","").replace("\u202f"," ").replace("            ", " ")
+            info_dict["ID_Canal"] = datos[1][1].replace("\n","").replace("\u202f"," ").replace("            ", " ")
+            
+            info_dict['Fecha'] = extract_hora(div_next[1])
         except:
             continue
 
