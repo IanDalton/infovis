@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 import pandas as pd
 import csv
+from datetime import datetime 
 
 
 
@@ -31,14 +32,14 @@ async def _get_video_data(database:pd.DataFrame,debug=False):
     async with aiohttp.ClientSession() as session:
         tasks = []
         for i,video in enumerate(videos):
-            url = f"https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id={video}&key={API_KEY}"
+            url = f"https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,contentDetails,statistics&id={video}&key={API_KEY}"
             i = i if debug else None
             tasks.append(fetch(session, url,i))
         responses = await asyncio.gather(*tasks)
         return responses
 
 def get_video_data(database:pd.DataFrame,tag_amount=20,debug=False):
-    database = database.drop_duplicates(subset=['ID_Video'])
+    
     responses = asyncio.run(_get_video_data(database,debug))
     data = []
     for response in responses:
@@ -46,7 +47,7 @@ def get_video_data(database:pd.DataFrame,tag_amount=20,debug=False):
     clean_data = clean_video_data(data,tag_amount)
 
     #Join left on ID_Video == video_id
-    data = database.merge(clean_data,how="left",left_on="ID_Video",right_on="video_id")
+    data = database.merge(clean_data,how="outer",left_on="ID_Video",right_on="video_id")
     #Drop video_id
     data = data.drop(columns=["video_id"])
     return data
@@ -57,6 +58,21 @@ def clean_video_data(data:list,tag_amount):
         video_data = dict()
         video_data["video_id"] = video.get("id")
         stats = video.get("statistics")
+        try:
+            duration = video.get("contentDetails").get("duration")
+            duration = duration.split("T")[1]
+            #Split duration in hours, minutes and seconds
+
+            hours,duration = duration.split("H") if "H" in duration else ["0",duration]
+
+            minutes,duration = duration.split("M") if "M" in duration else ["0",duration]
+
+            seconds, duration = duration.split("S") if "S" in duration else ["0",duration]
+            del duration
+            video_data["duration"] = str(datetime(year=1984,month=1,day=1,hour=int(hours),minute=int(minutes),second=int(seconds)))
+        except:
+            video_data["duration"] = None    
+
         video = video.get("snippet")
         
         video_data["description"] = video.get("description")
@@ -96,7 +112,7 @@ def clean_video_data(data:list,tag_amount):
     return clean_data
 
 if __name__ == "__main__":
-    with open('S:\Github\infovis\datos_personales\watch-history.csv', 'r',encoding="utf-8") as f:
+    with open('datos_personales\watch-history.csv', 'r',encoding="utf-8") as f:
         reader = csv.reader(f)
         data = list(reader)
     data = pd.DataFrame(data[1:],columns=data[0])
